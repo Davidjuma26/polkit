@@ -1,0 +1,9 @@
+[debuginfo]
+name=CentOS-$releasever - DebugInfo
+baseurl=http://debuginfo.centos.org/$releasever/$basearch/
+#baseurl=http://debuginfo.centos.org/$releasever/
+gpgcheck=1
+enabled=1
+gpgkey=http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-$releasever
+protect=1
+priority=1

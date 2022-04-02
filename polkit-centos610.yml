@@ -1,0 +1,80 @@
+- name: Fix polkit vulnerability
+  hosts: centOS610
+  become: true
+  become_user: root
+  tasks:
+    - name: copying new repo files to yum.repos.d
+      copy:
+        src: repos/
+        dest: /etc/yum.repos.d/
+        owner: root
+        group: root
+
+    - name: Creates localrepo directory
+      copy:
+        src: localrepo
+        dest: /mnt
+        owner: root
+        group: root
+
+    - name: Install createrepo package
+      yum:
+        name: createrepo
+        state: present
+
+    - name: create repository
+      command: createrepo /mnt/localrepo
+
+    - name: Add local repository
+      yum_repository:
+        name: localrepo
+        description: local repository
+        baseurl: file:///mnt/localrepo/
+        gpgcheck: no
+        enabled: yes
+
+    - name: install kernel packages from a specified localrepo
+      yum:
+        name: "{{ packages }}"
+        enablerepo: localrepo
+      vars:
+        packages:
+          - kernel-devel-2.6.32-754.el6.x86_64
+          - kernel-devel-2.6.32-754.35.1.el6.x86_64
+
+    - name: Install systemtap package
+      yum:
+        name: systemtap
+        state: present
+
+    - name: yum clean all -y
+      command: yum clean all -y
+
+    - name: install debuginfo package
+      command: yum install -y  /usr/bin/debuginfo-install polkit
+
+    - name: Copying the polkit file
+      copy:
+        src: polkit-file/
+        dest: /root/
+        owner: root
+        group: root
+
+    - name: load the systemtap module into the running kernel
+      command: stap -g -F -m stap_pkexec_block pkexec-block.stp
+      args:
+        chdir: /root/
+
+    - name: Display loaded Kernel Module
+      shell: lsmod | grep -i stap_pkexec_block
+      register: response
+    - debug: msg="{{ response.stdout }}"
+
+
+
+
+
+
+
+
+

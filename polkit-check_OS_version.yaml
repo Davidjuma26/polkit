@@ -1,0 +1,9 @@
+- name: Fix polkit vulnerability
+  hosts: centOS610
+  become: true
+  become_user: root
+  tasks:
+    - name: Display OS version
+      command: cat /etc/redhat-release
+      register: response
+    - debug: msg="{{ response.stdout }}"
